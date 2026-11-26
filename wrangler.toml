@@ -6,6 +6,7 @@ compatibility_date = "2026-01-15"
 PREMIUM_ENABLED = "false"
 CHANNEL_AUTO_PUBLISH = "false"
 FEEDS_JSON = "[]"
+PUBLIC_SITE_URL = "https://jobradar-ai.agentid-mints.workers.dev"
 
 [[d1_databases]]
 binding = "DB"
