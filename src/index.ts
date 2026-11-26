@@ -6,7 +6,8 @@ import { dashboard, script, styles } from './admin';
 import { managePublication } from './channel';
 import { scheduled } from './cron';
 import { constantTime, filtersSchema, hash, jobSchema, patchSchema } from './model';
-import { Conflict, ingest, lookup, search, stats, unpack, updateJob, type Env, type JobRow } from './store';
+import { publicPages, publicStyles } from './public';
+import { Conflict, ingest, lookup, publicSiteOrigin, search, stats, unpack, updateJob, type Env, type JobRow } from './store';
 import { handleUpdate } from './telegram';
 
 const scopes = ['jobs:write','jobs:manage','stats:read','channel:request','channel:approve'] as const;
@@ -111,10 +112,13 @@ app.post('/api/v1/channel/publish',auth(),async c=>{
 });
 app.post('/telegram/webhook',bodyLimit({maxSize:128*1024}),async c=>{
   if (!constantTime(c.req.header('X-Telegram-Bot-Api-Secret-Token'),c.env.TELEGRAM_WEBHOOK_SECRET)) return error(c,'Unauthorized',401);
-  await handleUpdate(c.env,await json(c));
+  await handleUpdate({
+    ...c.env, PUBLIC_SITE_URL: publicSiteOrigin(c.env.PUBLIC_SITE_URL, c.req.url)
+  }, await json(c));
   return c.json({ok:true});
 });
-app.get('/',c=>c.redirect('/admin',302));
+for (const [path, handler] of Object.entries(publicPages)) app.get(path, limit, handler);
+app.get('/public/style.css', publicStyles);
 app.get('/admin',c=>c.html(dashboard));
 app.get('/admin/style.css',c=>c.body(styles,200,{'Content-Type':'text/css; charset=utf-8'}));
 app.get('/admin/app.js',c=>c.body(script,200,{'Content-Type':'text/javascript; charset=utf-8'}));

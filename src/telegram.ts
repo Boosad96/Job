@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { filtersSchema, type Filters, type Listing } from './model';
-import { isActive, lookup, search, unpack, type Env, type JobRow } from './store';
+import { isActive, lookup, publicSiteOrigin, search, unpack, type Env, type JobRow } from './store';
 
 const dictionary = {
   en: {
@@ -85,6 +85,8 @@ function jobCard(env:Env,user:User,job:Listing,saved=false) {
   if (isOpen && job.applicationUrl) buttons[0].unshift(link(t.apply,job.applicationUrl));
   if (isOpen || saved) buttons.push([callback(saved ? t.remove : t.save,`${saved ? 'u' : 's'}:${job.id.slice(0,60)}`),
     ...(isOpen && share ? [link(t.share,`https://t.me/share/url?url=${encodeURIComponent(share)}&text=${encodeURIComponent(job.title)}`)] : [])]);
+  const site = publicSiteOrigin(env.PUBLIC_SITE_URL);
+  if (site) buttons.push([link('Full details', `${site}/jobs/${job.id}`)]);
   const salary = [job.minSalary,job.maxSalary].filter(value=>value!=null).join('–');
   return send(env,user.id,[
     job.title,job.company,[job.city,job.state,job.country].filter(Boolean).join(', '),

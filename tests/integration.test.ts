@@ -112,6 +112,12 @@ test('Telegram webhook, saved jobs/searches, Bengali alerts, deletion and public
     assert.equal(outbound.length,1);
     assert.match(JSON.stringify(outbound),/WBChakriAlert/);
     assert.equal((await webhook(message('country=IN | city=Kolkata'))).status,200);
+    assert.ok(JSON.stringify(outbound).includes('http://localhost/jobs/'+id));
+    try {
+      env.PUBLIC_SITE_URL='https://jobs.example.test/';
+      assert.equal((await webhook(message('/start j_'+id.slice(0,60)))).status,200);
+      assert.ok(JSON.stringify(outbound.at(-1)).includes('https://jobs.example.test/jobs/'+id));
+    } finally {delete env.PUBLIC_SITE_URL;}
     assert.equal((await click('s:'+id.slice(0,60))).status,200);
     assert.equal((await click('cadence:instant:stale')).status,200);
     assert.equal(await env.DB.prepare('SELECT count(*) AS count FROM searches').first('count'),0);

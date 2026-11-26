@@ -4,8 +4,16 @@ export type Env = {
   DB: D1Database; PUBLIC_LIMIT: RateLimit; TELEGRAM_BOT_TOKEN?: string; TELEGRAM_WEBHOOK_SECRET?: string;
   TELEGRAM_BOT_USERNAME?: string; API_CREDENTIALS?: string; CHANNEL_CHAT_ID?: string;
   CHANNEL_AUTO_PUBLISH?: string; FEEDS_JSON?: string; USAJOBS_API_KEY?: string; USAJOBS_USER_AGENT?: string;
-  PREMIUM_ENABLED?: string;
+  PREMIUM_ENABLED?: string; PUBLIC_SITE_URL?: string; PUBLIC_CONTACT_EMAIL?: string; ADS_TXT?: string;
 };
+export function publicSiteOrigin(configured?: string, requestUrl?: string) {
+  for (const value of [configured, requestUrl]) {
+    if (!value) continue;
+    const url = URL.parse(value);
+    if (url && ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password) return url.origin;
+  }
+  return undefined;
+}
 export type JobRow = {id: string; payload: string; version: number; created_at: string; updated_at: string; visible_at: string};
 export class Conflict extends Error {}
 export const unpack = (row: JobRow): Listing => ({
